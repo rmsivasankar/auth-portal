@@ -64,6 +64,14 @@ export default function AdminDashboard() {
     { id: 2, name: 'Glock 17', image: '/weapons/2.jpg', status: 'In Stock' },
     { id: 3, name: 'Remington 870', image: '/weapons/1.jpeg', status: 'Out of Stock' },
     { id: 4, name: 'M24 Sniper', image: '/weapons/2.jpg', status: 'In Stock' },
+    { id: 1, name: 'AK-47', image: '/weapons/1.jpeg', status: 'In Stock' },
+    { id: 2, name: 'Glock 17', image: '/weapons/2.jpg', status: 'In Stock' },
+    { id: 3, name: 'Remington 870', image: '/weapons/1.jpeg', status: 'Out of Stock' },
+    { id: 4, name: 'M24 Sniper', image: '/weapons/2.jpg', status: 'In Stock' },
+    { id: 1, name: 'AK-47', image: '/weapons/1.jpeg', status: 'In Stock' },
+    { id: 2, name: 'Glock 17', image: '/weapons/2.jpg', status: 'In Stock' },
+    { id: 3, name: 'Remington 870', image: '/weapons/1.jpeg', status: 'Out of Stock' },
+    { id: 4, name: 'M24 Sniper', image: '/weapons/2.jpg', status: 'In Stock' },
   ];
 
   return (

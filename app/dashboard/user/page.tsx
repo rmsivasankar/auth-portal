@@ -1,15 +1,18 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+
+
 // Sample top executives data
 const executives = [
-  { id: 1, name: 'Albert Wesker', title: 'CEO', image: 'https://assets-prd.ignimgs.com/2022/06/06/pjimage-2022-06-06t165441-445-1654548897379.jpg' },
-  { id: 2, name: 'William Birkin', title: 'Lead Scientist', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLC44ZRQJEKWZMvrRECTu3V7lsqWaOOYPnFA&s' },
-  { id: 3, name: 'James Marcus', title: 'Founder', image: 'https://www.evilresource.com/images/data/full/re0/james-marcus.png' },
-  { id: 4, name: 'Osmund Saddler', title: 'Executive Officer', image: 'https://www.evilresource.com/images/data/full/re4/osmund-saddler.png' },
+  { id: 1, name: 'Albert Wesker', title: 'CEO', image: '/avatar/1.jpg' },
+  { id: 2, name: 'William Birkin', title: 'Lead Scientist', image: '/avatar/2.png' },
+  { id: 3, name: 'James Marcus', title: 'Founder', image: '/avatar/3.png' },
+  { id: 4, name: 'Osmund Saddler', title: 'Executive Officer', image: '/avatar/4.jpg' },
 ];
 
 export default function UserDashboard() {
@@ -47,7 +50,7 @@ export default function UserDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {executives.map(executive => (
           <div key={executive.id} className="bg-gray-800 p-4 rounded-lg shadow-md">
-            <img src={executive.image} alt={executive.name} className="w-full h-32 object-cover rounded-md mb-2" />
+            <Image src={executive.image} alt={executive.name} className="w-full h-32 object-cover rounded-md mb-2" width={200} height={400} />
             <h3 className="text-lg font-semibold text-white">{executive.name}</h3>
             <p className="text-gray-400">{executive.title}</p>
           </div>

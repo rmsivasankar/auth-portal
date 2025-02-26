@@ -10,6 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import Image from "next/image";
 
 // Register the necessary components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -59,10 +60,10 @@ export default function AdminDashboard() {
 
   // Sample weapon data for the inventory
   const weapons = [
-    { id: 1, name: 'AK-47', image: 'https://as2.ftcdn.net/v2/jpg/09/47/17/65/1000_F_947176528_6VjzPtBX5ur196uZCcepCYl8JnVizlZ5.jpg', status: 'In Stock' },
-    { id: 2, name: 'Glock 17', image: 'https://as2.ftcdn.net/v2/jpg/06/32/41/85/1000_F_632418527_Kwu61A9QmhGdtvL3Ba49JCcfUWWPr9w9.jpg', status: 'In Stock' },
-    { id: 3, name: 'Remington 870', image: 'https://as1.ftcdn.net/v2/jpg/04/66/26/16/1000_F_466261695_jBdxrrJdKJLt3vrNX4GlyFsvj7ggew7P.jpg', status: 'Out of Stock' },
-    { id: 4, name: 'M24 Sniper', image: 'https://as2.ftcdn.net/v2/jpg/11/50/97/25/1000_F_1150972527_hiOdZtr8p0ugWJVzMhzELPwsvcJ3diFp.jpg', status: 'In Stock' },
+    { id: 1, name: 'AK-47', image: '/weapons/1.jpeg', status: 'In Stock' },
+    { id: 2, name: 'Glock 17', image: '/weapons/2.jpg', status: 'In Stock' },
+    { id: 3, name: 'Remington 870', image: '/weapons/1.jpeg', status: 'Out of Stock' },
+    { id: 4, name: 'M24 Sniper', image: '/weapons/2.jpg', status: 'In Stock' },
   ];
 
   return (
@@ -81,7 +82,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {weapons.map(weapon => (
           <div key={weapon.id} className="bg-gray-800 p-4 rounded-lg shadow-md">
-            <img src={weapon.image} alt={weapon.name} className="w-full h-32 object-cover rounded-md mb-2" />
+            <Image src={weapon.image} alt={weapon.name} className="w-full h-32 object-cover rounded-md mb-2" width={200} height={400} />
             <h3 className="text-lg font-semibold text-white">{weapon.name}</h3>
             <p className="text-gray-400">{weapon.status}</p>
           </div>

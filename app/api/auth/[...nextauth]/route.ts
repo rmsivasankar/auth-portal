@@ -1,21 +1,21 @@
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
-    // GitHub OAuth Provider
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
-
-    // Credentials (Email & Password) Provider
     CredentialsProvider({
       name: "credentials",
-      credentials: { email: { type: "email" }, password: { type: "password" } },
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Missing email or password");
@@ -23,7 +23,7 @@ export const authOptions = {
 
         const user = await prisma.user.findUnique({ where: { email: credentials.email } });
 
-        if (!user) throw new Error("User not found");
+        if (!user) throw new Error("User  not found");
 
         const isValid = await bcrypt.compare(credentials.password, user.password);
 
@@ -46,7 +46,7 @@ export const authOptions = {
       }
       return session;
     },
-    async redirect({ url, baseUrl }) {
+    async redirect({ baseUrl }) {
       return baseUrl; // Prevent unwanted redirects
     },
   },
@@ -56,5 +56,8 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
+// Create the NextAuth handler
 const handler = NextAuth(authOptions);
+
+// Export the handler for GET and POST requests
 export { handler as GET, handler as POST };

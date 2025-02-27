@@ -13,7 +13,6 @@ const executives = [
   { id: 2, name: 'William Birkin', title: 'Lead Scientist', image: '/avatar/2.png' },
   { id: 3, name: 'James Marcus', title: 'Founder', image: '/avatar/3.png' },
   { id: 4, name: 'Osmund Saddler', title: 'Executive Officer', image: '/avatar/4.jpg' },
-  
 ];
 
 export default function UserDashboard() {

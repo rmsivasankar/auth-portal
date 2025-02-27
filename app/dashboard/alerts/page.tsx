@@ -1,105 +1,92 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PieChart, Pie, Tooltip, Cell } from "recharts";
 
 export default function SecurityAlerts() {
-  const [alerts, setAlerts] = useState<{ type: string; message: string; count: number }[]>([
-    { type: "SQL Injection", message: "Attempted SQL query detected.", count: 0 },
-    { type: "DDoS", message: "Multiple rapid requests from the same IP.", count: 0 },
-    { type: "URL Tampering", message: "User attempted to modify query parameters.", count: 0 },
-  ]);
-
-  const [clickCount, setClickCount] = useState(0);
-  const [lastSearch, setLastSearch] = useState("");
-
-  // Function to update alerts and store them in the database
-  const addAlert = (alertType: string) => {
-    setAlerts((prev) =>
-      prev.map((alert) =>
-        alert.type === alertType ? { ...alert, count: alert.count + 1 } : alert
-      )
-    );
-
-    // Send the alert data to the backend API for storage
-    fetch("/api/security-logs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: alertType, timestamp: new Date().toISOString() }),
-    }).catch((err) => console.error("Error logging security alert:", err));
-  };
+  const [securityLogs, setSecurityLogs] = useState([]);
 
   useEffect(() => {
-    // Track excessive clicks (potential DDoS behavior)
-    const handleClick = () => {
-      setClickCount((prev) => prev + 1);
-    };
-
-    document.addEventListener("click", handleClick);
-
-    // Monitor URL tampering
-    const checkURLTampering = () => {
-      if (window.location.search !== lastSearch) {
-        addAlert("URL Tampering");
-        setLastSearch(window.location.search);
+    const fetchLogs = async () => {
+      try {
+        const res = await fetch("/api/security-logs");
+        const data = await res.json();
+        if (data.success) {
+          setSecurityLogs(data.logs); // Ensure correct key is used
+        }
+      } catch (error) {
+        console.error("Error fetching security logs:", error);
       }
     };
 
-    const urlObserver = new MutationObserver(checkURLTampering);
-    urlObserver.observe(document.documentElement, { subtree: true, childList: true });
+    fetchLogs();
+  }, []);
 
-    return () => {
-      document.removeEventListener("click", handleClick);
-      urlObserver.disconnect();
-    };
-  }, [lastSearch]);
-
-  useEffect(() => {
-    // If clicks exceed a threshold, trigger a DDoS alert
-    if (clickCount > 10) {
-      addAlert("DDoS");
-      setClickCount(0); // Reset count after triggering an alert
-    }
-  }, [clickCount]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    const sqlInjectionPattern = /(\b(SELECT|INSERT|DELETE|UPDATE|DROP|--|#|\*|')\b)/gi;
-
-    if (sqlInjectionPattern.test(inputValue)) {
-      addAlert("SQL Injection");
-    }
+  const attackCounts = {
+    "SQL Injection": 0,
+    "XSS": 0,
+    "Brute Force": 0,
+    "Other": 0
   };
+
+  securityLogs.forEach((log) => {
+    const type = log.attackType || "Other";
+    if (attackCounts[type] !== undefined) {
+      attackCounts[type]++;
+    } else {
+      attackCounts["Other"]++;
+    }
+  });
+
+  const chartData = Object.entries(attackCounts).map(([name, value]) => ({
+    name,
+    value,
+  }));
+
+  const COLORS = ["#ff0000", "#ff8c00", "#00bfff", "#808080"];
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold">Security Alerts</h1>
-      <p className="text-gray-600 mb-4">Monitoring user interactions for security threats.</p>
+      <h1 className="text-3xl font-bold mb-4">Security Alerts</h1>
 
-      {/* Simulated User Input Field */}
-      <input
-        type="text"
-        placeholder="Enter something..."
-        onChange={handleInputChange}
-        className="border p-2 mb-4 w-full rounded-lg"
-      />
-
-      {/* Security Alerts Table */}
-      <table className="w-full border-collapse border border-gray-300">
+      <PieChart width={400} height={400}>
+        <Pie data={chartData} cx={200} cy={200} outerRadius={150} fill="#8884d8" dataKey="value">
+          {chartData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip />
+      </PieChart>
+      
+      <h2 className="text-2xl mt-6">Recent Security Logs</h2>
+      <table className="w-full border-collapse border border-gray-300 mt-4">
         <thead>
           <tr className="bg-gray-200">
-            <th className="border border-gray-300 p-2 text-left">Attack Type</th>
-            <th className="border border-gray-300 p-2 text-left">Message</th>
-            <th className="border border-gray-300 p-2 text-left">Count</th>
+            <th className="border border-gray-300 p-2">Email</th>
+            <th className="border border-gray-300 p-2">IP Address</th>
+            <th className="border border-gray-300 p-2">User Agent</th>
+            <th className="border border-gray-300 p-2">Time</th>
+            <th className="border border-gray-300 p-2">Attack Type</th>
           </tr>
         </thead>
         <tbody>
-          {alerts.map((alert, index) => (
-            <tr key={index} className="border border-gray-300">
-              <td className="border border-gray-300 p-2">{alert.type}</td>
-              <td className="border border-gray-300 p-2">{alert.message}</td>
-              <td className="border border-gray-300 p-2">{alert.count}</td>
+          {securityLogs.length === 0 ? (
+            <tr>
+              <td colSpan={5} className="text-center p-4">No security logs found.</td>
             </tr>
-          ))}
+          ) : (
+            securityLogs.map((log, index) => (
+              <tr key={index} className="border border-gray-300">
+                <td className="border border-gray-300 p-2">{log.email || "N/A"}</td>
+                <td className="border border-gray-300 p-2">{log.ipAddress || "Unknown"}</td>
+                <td className="border border-gray-300 p-2">{log.userAgent || "Unknown"}</td>
+                <td className="border border-gray-300 p-2">{new Date(log.timestamp).toLocaleString()}</td>
+                <td className={`border border-gray-300 p-2 font-bold ${log.attackType ? "text-red-500" : "text-green-600"}`}>
+                  {log.attackType || "Normal"}
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

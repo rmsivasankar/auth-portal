@@ -1,37 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
 
-const prisma = new PrismaClient();
-
-export async function POST(req: NextRequest) {
+export async function GET() {
   try {
-    const { type, message } = await req.json();
-    
-    if (!type || !message) {
-      return NextResponse.json({ success: false, error: "Invalid data" }, { status: 400 });
-    }
-
-    // Check if attack type already exists in DB
-    const existingLog = await prisma.securityLog.findFirst({
-      where: { type },
+    const loginAttempts = await prisma.loginAttempt.findMany({
+      orderBy: { attemptTime: "desc" },
+      take: 20,
     });
 
-    if (existingLog) {
-      // If attack exists, update count
-      await prisma.securityLog.update({
-        where: { id: existingLog.id },
-        data: { count: existingLog.count + 1 },
-      });
-    } else {
-      // If new attack, insert record
-      await prisma.securityLog.create({
-        data: { type, message, count: 1 },
-      });
-    }
-
-    return NextResponse.json({ success: true, message: "Security alert logged" });
+    return NextResponse.json({ success: true, loginAttempts });
   } catch (error) {
-    console.error("Error storing alert:", error);
-    return NextResponse.json({ success: false, error: "Server error" }, { status: 500 });
+    return NextResponse.json({ success: false, message: "Error fetching logs" }, { status: 500 });
   }
 }

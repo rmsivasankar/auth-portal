@@ -4,6 +4,9 @@ import GitHubProvider from "next-auth/providers/github";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
 
+const MAX_ATTEMPTS = 3; // Maximum allowed failed attempts
+const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes lockout
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GitHubProvider({
@@ -21,13 +24,55 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Missing email or password");
         }
 
+        // Detect SQL Injection patterns
+        const sqlInjectionPattern = /(\b(SELECT|INSERT|DELETE|UPDATE|DROP|--|#|\*|')\b)/gi;
+        if (sqlInjectionPattern.test(credentials.email) || sqlInjectionPattern.test(credentials.password)) {
+          await prisma.securityLog.create({
+            data: {
+              type: "SQL Injection",
+              message: `SQLi attempt detected for email: ${credentials.email}`,
+              timestamp: new Date(),
+            },
+          });
+          throw new Error("Suspicious activity detected.");
+        }
+
         const user = await prisma.user.findUnique({ where: { email: credentials.email } });
 
-        if (!user) throw new Error("User  not found");
+        if (!user) {
+          throw new Error("User not found");
+        }
 
+        // Check for failed login attempts
+        const lastFailedAttempt = await prisma.loginAttempt.findFirst({
+          where: { email: credentials.email },
+          orderBy: { timestamp: "desc" },
+        });
+
+        if (lastFailedAttempt && lastFailedAttempt.attempts >= MAX_ATTEMPTS) {
+          const timeSinceLastAttempt = new Date().getTime() - new Date(lastFailedAttempt.timestamp).getTime();
+          if (timeSinceLastAttempt < LOCKOUT_TIME) {
+            throw new Error("Account locked. Try again later.");
+          } else {
+            // Reset attempts if lockout period is over
+            await prisma.loginAttempt.deleteMany({ where: { email: credentials.email } });
+          }
+        }
+
+        // Validate password
         const isValid = await bcrypt.compare(credentials.password, user.password);
+        if (!isValid) {
+          await prisma.loginAttempt.upsert({
+            where: { email: credentials.email },
+            update: { attempts: { increment: 1 }, timestamp: new Date() },
+            create: { email: credentials.email, attempts: 1, timestamp: new Date() },
+          });
 
-        if (!isValid) throw new Error("Invalid credentials");
+          throw new Error("Invalid credentials.");
+        }
+
+        // Reset failed attempts on successful login
+        await prisma.loginAttempt.deleteMany({ where: { email: credentials.email } });
 
         return { id: user.id, email: user.email, role: user.role };
       },

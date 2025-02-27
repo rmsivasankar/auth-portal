@@ -21,10 +21,17 @@ enum Role {
   ADMIN
 }
 
-model SecurityLog {
-  id        Int      @id @default(autoincrement())
-  type      String
-  message   String
-  count     Int      @default(1)
+model LoginAttempt {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  attempts  Int      @default(0)
   timestamp DateTime @default(now())
 }
+
+model SecurityLog {
+  id        String   @id @default(uuid())
+  type      String
+  message   String
+  timestamp DateTime @default(now())
+}
+

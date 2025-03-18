@@ -15,7 +15,7 @@ export default function Signup() {
   useEffect(() => {
     const checkIP = async () => {
       try {
-        let userIP = "";
+        let userIP = "::1";
 
 
         const res = await fetch("/api/get-ip");

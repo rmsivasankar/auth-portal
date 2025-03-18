@@ -10,12 +10,12 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [allowed, setAllowed] = useState(false);
 
-  const allowedIPs = "::1";
+  const allowedIPs = "106.222.222.158";
 
   useEffect(() => {
     const checkIP = async () => {
       try {
-        let userIP = "";
+        let userIP = "106.222.222.158";
 
 
         const res = await fetch("/api/get-ip");

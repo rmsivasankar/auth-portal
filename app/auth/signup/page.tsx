@@ -18,13 +18,13 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false)
   const [isChecking, setIsChecking] = useState(true)
 
-  const allowedIPs = "106.222.222.158"
+  const allowedIPs = "42.111.149.17"
 
   useEffect(() => {
     const checkIP = async () => {
       try {
-        setIsChecking(false)
-        let userIP = "106.222.222.158"
+        setIsChecking(true)
+        let userIP = "::-1"
 
         const res = await fetch("/api/get-ip")
         const data = await res.json()

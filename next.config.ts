@@ -1,8 +1,8 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['static.wikia.nocookie.net'], // Add your external image domains here
+    domains: ["static.wikia.nocookie.net"], // Add your external image domains here
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig
+

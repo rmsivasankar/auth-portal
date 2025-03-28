@@ -1,15 +1,21 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server"
+import prisma from "@/lib/prisma"
 
 export async function GET() {
   try {
-    const loginAttempts = await prisma.loginAttempt.findMany({
-      orderBy: { attemptTime: "desc" },
-      take: 20,
-    });
+    // Fetch security logs from the database
+    const logs = await prisma.securityLog.findMany({
+      orderBy: { timestamp: "desc" },
+      take: 50, // Limit to the most recent 50 logs
+    })
 
-    return NextResponse.json({ success: true, loginAttempts });
+    return NextResponse.json({
+      success: true,
+      logs,
+    })
   } catch (error) {
-    return NextResponse.json({ success: false, message: "Error fetching logs" }, { status: 500 });
+    console.error("Error fetching security logs:", error)
+    return NextResponse.json({ success: false, error: "Failed to fetch security logs" }, { status: 500 })
   }
 }
+
